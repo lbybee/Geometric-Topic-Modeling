@@ -58,9 +58,9 @@ def gdm(wdfn, K, ncores=-1):
         k_dist = euclidean(glob_cent, centers[k])
         Rk = max(np.apply_along_axis(lambda x: euclidean(glob_cent, x), 1, wdfn[labels==k,:]))
         m.append(Rk/k_dist)
-    
+
     beta_means = get_beta(glob_cent, centers, m)
-    
+
     return beta_means
 
 ## Geometric Theta
@@ -98,7 +98,7 @@ def min_match(beta, beta_t):
 
 def perplexity(docs, beta, theta='geom', scale=True):
   if type(theta)==str:
-      theta = np.apply_along_axis(lambda x: proj_on_s(beta, x, beta.shape[0]), 1, normalize(docs, 'l1'))  
+      theta = np.apply_along_axis(lambda x: proj_on_s(beta, x, beta.shape[0]), 1, normalize(docs, 'l1'))
       scale = True
   est = np.dot(theta, beta)
   if scale:

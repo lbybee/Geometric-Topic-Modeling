@@ -105,7 +105,7 @@ def angle_raw(wdfn, cent, max_discard=100, delta=0.4, prop_discard=0.5, prop_n =
             plt.figure()
             plt.scatter(cos_dist[cos_sort], norms[cos_sort], color=color, alpha=1)
             plt.show()
-            
+
         # Remove processed data
         norms = norms[remain_bool]
         wdfn = wdfn[remain_bool,:]
@@ -133,16 +133,16 @@ def sph_means(data, cent, init=None, K=0, it=1000, toy=False, only_direct=True):
     else:
         ctopics = np.copy(init) - cent
         K = ctopics.shape[0]
-    
+
     norms = sparse_norm(data, cent)
-    
+
     for i in range(it):
         D = []
         ## Get clustering
         for k in range(K):
             D.append(sparse_cos_sim(data, ctopics[k], cent, norms))
         clusters = np.argmin(D, axis=0)
-    
+
         ## Update centers
         for k in range(K):
             c = np.where(clusters == k)[0]
@@ -153,7 +153,7 @@ def sph_means(data, cent, init=None, K=0, it=1000, toy=False, only_direct=True):
                     ctopics[k] *= max(data[c,:].dot(ctopics[k]) - np.dot(ctopics[k], cent))
         if toy:
             plot_clust(data.toarray()-cent, ctopics, clusters)
-    
+
     ctopics = ctopics + cent
     ctopics[ctopics<0] = 0
     ctopics = normalize(ctopics, 'l1')
@@ -165,7 +165,7 @@ def min_match(beta, beta_t):
     return max([max(np.min(b_to_t, axis=0)), max(np.min(b_to_t, axis=1))])
 
 ## Class wrapper for the algorithms
-class geom_tm(BaseEstimator, ClusterMixin):  
+class geom_tm(BaseEstimator, ClusterMixin):
     def __init__(self, max_discard=100, delta=0.4, prop_discard=0.5, prop_n=0.01, verbose=False, algo0 = False, toy=False):
 
         self.max_discard = max_discard # number of discards before algorithm stops
@@ -177,19 +177,19 @@ class geom_tm(BaseEstimator, ClusterMixin):
         self.toy = toy # only set to True if V=K=3. It will plot triangles then
 
     def fit_a(self, data, cent):
-        
+
         self.a_betas_ = angle_raw(data, cent, self.max_discard, self.delta, self.prop_discard, self.prop_n, self.verbose, self.algo0, self.toy)
         self.K_ = self.a_betas_.shape[0]
         return self
-    
+
     def fit_sph(self, data, cent, init=None, K=0, it = 10, only_direct=False):
         if init is None and hasattr(self, 'a_betas_'):
             init = self.a_betas_
             K = self.K_
-        
+
         self.sph_betas_, self.sph_clust_ = sph_means(data, cent, init, K, it, self.toy, only_direct)
         return self
-    
+
     def fit_all(self, data, cent, it=5):
         self = self.fit_a(data, cent)
         self = self.fit_sph(data, cent, it=it)
@@ -201,4 +201,3 @@ class geom_tm(BaseEstimator, ClusterMixin):
         if hasattr(self, 'sph_betas_'):
             score.append(min_match(self.sph_betas_, beta_t))
         return score
-        
